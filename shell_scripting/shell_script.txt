@@ -1,0 +1,610 @@
+Shell scripting
+
+${USER_NAME:-Guest}  => fallback default value string 'Guest' only if variable 'USER_NAME' is completely unset or null?
+${USER_NAME: -1}  => It returns the very last individual character of the string variable content
+=============
+declare -a choices  --> indexed array
+declare -A USER_DATA  --> associative array keys are string
+declare -A arr
+arr[os]="Linux"
+arr[container]="Docker"
+arr[orchestration]="Kubernetes"
+
+for key in "${!arr[@]}"  # ! gives the key
+do
+    echo "$key = ${arr[$key]}"   # value
+done
+unset arr
+================
+declare -a choices  --> indexed array
+choices=()
+choices+=("Start")
+choices+=("Stop")
+choices+=("Restart")
+choices+=("Exit")
+=======================
+choices=("Start" "Stop" "Restart" "Exit")  # notice how array declared (no comma)
+echo "${choices[@]}" =>each element separately
+echo "${choices[*]}" => all elements together as one string
+
+select item in "${choices[@]}"; do
+    if [[ "$item" == "Exit" ]]; then
+        echo "Goodbye!"
+        break
+    fi
+
+    echo "You selected: $item"
+done
+
+for    → iterate over items
+while  → continue while condition is true
+until  → continue until condition becomes true
+select → interactive menu
+==================
+positional parameter like $11 without enclosing the digits inside curly braces  $1 and extra one as string so ue this ${11}
+=================
+WHICH TEST VALUE CHECKS ENERGETIC STRINGS TO VERIFY IF THE UNDERLYING STRING LENGTH ACCUMULATES ZERO CHARACTERS?
+[[ -z "$string" ]] empty
+[[ -n "$string" ]] non empty
+[[ "$a" == "$b" ]]
+[[ "$a" != "$b" ]]
+[[ "$a" < "$b" ]]
+${#var} → string length
+[[ -s "$file" ]] file exist and have a size greater than zero
+-e    path exists
+-f    regular file
+-d    directory
+-r    readable
+-w    writable
+-x    executable
+
+-eq   numeric equal
+-ne   numeric not equal
+-gt   greater than
+-ge   greater/equal
+-lt   less than
+-le   less/equal
+
+if [[ -O /etc/myconfig ]]; then
+    echo "I own the file"
+fi
+if [[ -G /etc/myconfig ]]; then  => Checks whether the file's group ownership matches the effective group ID of the current process.
+    echo "I own the file"
+fi
+
+if [[ -L "$file" ]]; then
+    echo "It is a symbolic link"
+fi
+
+[[ -h "$file" ]]
+-h is essentially an alternative spelling for -L in Bash.
+
+FILE vs FILE:
+-ef → same file
+-nt → newer
+-ot → older
+============================
+Which Bash option ensures the script fails immediately if it references a variable that has not been previously declared?
+
+set -u => unset variable
+
+set -e => exit on any error
+
+set -x — execution tracing... use this
+set -v    verbose: print commands as read
+set -o pipefail => Pipeline fails if any command fails
+	command1 | command2 | command3
+
+	Without pipefail, Bash normally considers the exit status of the last command (command3).
+	
+set -eou pipefail  => is a popular cmd
+
+set +  to disable
+set +e
+set +u
+set +o pipefail
+===========================
+
+$? — exit status of last command
+$! — PID of last background process
+$$ — PID of current shell/script
+$0 — name of the script
+$1, $2, $3 ... — positional arguments
+$# — number of arguments
+$@ — all arguments
+$* — all arguments as one expansion
+=========================
+
+| Operator | Meaning          | Example       | Result |
+| -------- | ---------------- | ------------- | -----: |
+| `+`      | Addition         | `$((A + B))`  |     15 |
+| `-`      | Subtraction      | `$((A - B))`  |      5 |
+| `*`      | Multiplication   | `$((A * B))`  |     50 |
+| `/`      | Integer division | `$((A / B))`  |      2 |
+| `%`      | Remainder/modulo | `$((A % B))`  |      0 |
+| `**`     | Power            | `$((A ** B))` | 100000 |
+| `++`     | Increment        | `((A++))`     |  A + 1 |
+| `--`     | Decrement        | `((A--))`     |  A - 1 |
+======================
+A here-string lets you pass the contents of a variable directly to a command through standard input (stdin).
+data="hello
+world
+bash"
+
+cat <<< "$data"
+-----
+data="apple
+banana
+orange"
+
+while read -r item; do
+    echo "Fruit: $item"
+done <<< "$data"
+======================
+with read we can use below flag
+-r   raw input
+-p   prompt
+-s   silent/password input
+-t   timeout
+-n   read upto N characters
+-N   read exactly N characters
+-a   read into array
+-d   custom delimiter
+-u   file descriptor
+======================
+Bash parameter expansion / pattern removal.
+
+var="abcabc123"
+${var#pattern} → shortest match from beginning
+${var##pattern} -> It removes the longest matching pattern from the beginning (left side)
+
+${var%pattern} → shortest match from end
+${var%%pattern} → longest match from end
+
+${var/pat/repl}      replace first match
+${var//pat/repl}     replace all matches
+var="hello world world"
+
+echo "${var/world/Bash}"  ===hello Bash world
+echo "${var//world/Bash}"  ===hello Bash Bash
+
+Syntax		Meaning	Example
+${VAR,,}	Convert to lowercase	HELLO → hello
+${VAR^^}	Convert to uppercase	hello → HELLO
+============================
+EUID = Effective User ID
+EUID 0 = root
+echo $EUID is 0 if running from root user
+==============================
+
+Every normal Linux process has three standard file descriptors:
+0 → stdin   → input
+1 → stdout  → normal output
+2 → stderr  → error output
+
+command > output.log
+command 1> output.log
+
+command 2> error.log
+
+command &> output.log ~===~ command > output.log 2>&1
+
+Send file descriptor 2 (stderr) to wherever file descriptor 1 (stdout) is currently going.
+command > /dev/null 2>&1  # silenced everything
+
+=============================
+-c
+Execute commands supplied as a string ✅
+bash -c '
+name="Subrat"
+echo "Hello $name"
+
+for i in 1 2 3; do
+    echo "$i"
+done
+'
+
+bash -c 'echo "Name: $1"' -- Subrat
+
+The -- becomes $0, and Subrat becomes $1.
+
+==============================
+while  → do something WHILE condition is true
+until  → do something UNTIL condition becomes true
+
+until command_succeeds; do
+    retry
+    sleep
+done
+====================
+
+creates a new subshell environment to execute the command(s).
+
+name="Subrat"
+(
+    name="Rahul"
+    echo "$name"
+)
+echo "$name"
+
+o/p 
+Rahul
+Subrat
+=========================
+##REGEX
+
+cat > server.log <<EOF
+INFO Server started
+INFO Database connected
+ERROR Database connection failed
+WARNING High memory usage
+INFO Server stopped
+EOF
+
+grep "ERROR" server.log
+grep -i "error" file.txt
+grep -n "ERROR" server.log  ==> tells you which line also
+
+grep -v "ERROR" server.log  ==> invert the match all exceot error
+grep -c "ERROR" server.log  ==> count matching line
+grep -r "ERROR" project/  ==> recursively
+
+grep -w "ERROR" file ==> whole word
+
+grep -o "ERROR" server.log  ==> return only matching portion
+
+----------
+cat > regex.txt <<EOF
+cat
+cut
+cot
+cart
+bat
+c9t
+EOF
+
+. — any single character
+^ — beginning of line 
+$ — end of line
+	grep '^ERROR$' regex.txt
+	
+[abc] — character class  -> matching a or b or c
+
+grep '[abc]' regex.txt
+
+[0-9] Character ranges[0-9] 
+[a-zA-Z0-9]
+[^ ] — NOT  Same character, different meaning depending on location.
+[^0-9]  not a digit 
+
+* — zero or more
+
+Now we need Extended Regex:
++ — one or more
+? — zero or one
+| - OR
+grep -E 'ab+' file  
+ab
+abb
+abbb
+a - no
+
+
+ab*   → zero or more b
+ab+   → one or more b
+
+
+grep -E 'colou?r' file
+
+zero times → color
+one time   → colour
+
+
+{n} — exact number
+grep -E '[0-9]{3}' file 
+
+
+{n,m}
+grep -E '[0-9]{2,4}' file
+Between 2 and 4 digits.
+
+-----------
+.          any single character
+
+^          beginning of line
+
+$          end of line
+
+[abc]      a OR b OR c
+
+[a-z]      lowercase letter
+
+[A-Z]      uppercase letter
+
+[0-9]      digit
+
+[^0-9]     NOT a digit
+
+*          zero or more
+
++          one or more
+
+?          zero or one
+
+{n}        exactly n
+
+{n,m}      between n and m
+
+.*         anything
+--------------
+cat > regex.log << EOF
+INFO 2026-09-26 Server started
+ERROR 2026-09-26 Database failed
+INFO 2026-09-26 Request received
+ERROR 2026-09-26 Connection timeout
+WARNING 2026-09-26 Memory usage high
+EOF
+
+Find lines containing one or more digits
+grep -E '[0-9]+' app.log
+
+
+grep -E 'ERROR|WARNING' app.log
+
+
+Grouping — ( )
+grep -E 'ERROR:|WARNING:|INFO:' app.log
+grep -E '(ERROR|WARNING|INFO):' app.log
+
+Combining grouping + quantifiers
+grep -E '(ha)+' file
+
+Escaping special characters
+grep 'server\.example\.com' file
+
+
+grep '192\.168\.1\.10' file
+
+grep -oE '\b([0-9]{1,3}\.){3}[0-9]{1,3}\b' app.log  == extract ip
+grep -oE '\b(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b' app.log
+
+  -o return only matching part
+  (){}Grouping + Repetition
+  
+grep -E '\b[45][0-9]{2}\b' access.log  == 4xx or 5xx  
+grep -oE '([0-9]{1,3}\.){3}[0-9]{1,3}:[0-9]{1,5}' network.log  ip:port
+grep -oE '[0-2][0-9]\:[0-5][0-9]\:[0-5][0-9]' app.log  ==> HH:MM:SS
+POSIX character classes
+[[:digit:]]    digits
+[[:alpha:]]    letters
+[[:alnum:]]    letters + digits
+[[:lower:]]    lowercase
+[[:upper:]]    uppercase
+[[:space:]]    whitespace
+[[:blank:]]    spaces/tabs
+
+
+🚀 Level 5 — Advanced Regex: Groups, Boundaries, Escaping & Precise Matching
+
+Capturing the exact word — \b
+grep -E '\bcat\b' file
+cat        ✅
+cat123     ❌
+catalog    ❌
+copycat    ❌
+
+[abc]       → ONE character
+(abc|xyz)   → ONE of these strings
+
+grep -E '^(GET|POST|PUT)\b' access.log
+
+Optional matching — ?
+colou?r
+u?  -- u can appear zero or one time. will match both
+
+	color
+	colour
+
+
+
+grep -Eo "^(GET|POST|DELETE|PATCH|DEBUG|GETTING)\b" access.log
+grep -oE '/[^[:space:]]+' access.log   
+/              → starts with /
+[^[:space:]]   → any character that is NOT whitespace
++              → one or more
+
+| Regex    | Meaning       |
+| -------- | ------------- |
+| `[0-9]+` | **1 or more** |
+| `[0-9]*` | **0 or more** |
+| `[0-9]?` | **0 or 1**    |
+
+grep -iE 'CrashLoopBackOff|Error|Failed' app.log
+
+🚀 Level 7 — grep -o + Pipes + sort + uniq
+
+uniq does not remove all duplicates unless identical entries are next to each other.
+we use sort | uniq
+
+grep -oE '\b([0-9]{1,3}\.){3}[0-9]{1,3}\b' app.log | sort | uniq -c
+
+      2 10.20.30.40
+      1 10.20.30.41
+      2 192.168.1.25
+	  
+10.20.30.40 → 2 times
+10.20.30.41 → 1 time
+192.168.1.25 → 2 times
+eg  Find the most frequent IP
+
+... | sort | uniq -c | sort -nr
+
+numeric sorting and r is reverse order
+... | sort | uniq -c | sort -nr | head -1
+
+
+grep -Eo '\b([0-9]{1,3}\.){3}[0-9]{1,3}\b' access.log |sort|uniq -c|sort -nr|head -1
+grep -Eo '\b[245][0-9]{2}\b' access.log |sort|uniq -c|head -1
+
+🚀 Level 8 — grep + awk: Extracting Fields Like a DevOps Engineer
+awk is a powerful text-processing command in Linux used to analyze, filter, and manipulate structured data such as logs, CSV files, and command output. It works by scanning input line by line and performing actions based on patterns and fields.
+
+grep is excellent for finding patterns.
+awk is excellent for working with columns/fields.
+awk [options] 'pattern {action}' input-file
+
+10.20.30.40 GET /api/users 200
+10.20.30.41 POST /api/login 500
+192.168.1.25 GET /api/orders 404
+
+$1             $2       $3          $4
+│              │        │           │
+IP             Method   Endpoint    Status
+
+awk -F' ' '{print $1}' access.log
+NOTE default seperator is spaces/tabs
+
+$0 → entire line
+$1 → first field
+$2 → second field
+$3 → third field
+...
+
+NF — number of fields
+
+awk '{print NF}' access.log
+
+awk '{print $NF}' access.log  == last field This is extremely useful when the number of fields can vary.
+
+NR — line number Number of the current record/line
+
+awk '{print NR, $0}' access.log
+1 10.20.30.40 GET /api/users 200
+2 10.20.30.41 POST /api/login 500
+3 192.168.1.25 GET /api/orders 404
+4 192.168.1.25 GET /api/orders 404
+5 192.168.1.25 GET /api/orders 404
+
+Filtering with awk
+
+awk '$4 == 500' access.log  => Find only lines where status is 500:
+
+awk '$4 == 500 {print $1}' access.log  ==> Print only the IP for 500 errors
+
+grep 'POST' access.log | awk '$4 >= 400 {print $1, $3, $4}'  ==> Combining grep and awk
+awk '$2 == "POST" && $4 >= 400 {print $1, $3, $4}' access.log  == above equivalent
+
+awk '$2 == "POST" && $4 >= 400' access.log
+awk '$2 == "POST" || $4 >= 400' access.log
+
+awk 'condition {print field}' file |
+sort |
+uniq -c |
+sort -nr |
+head
+
+🚀 Level 10 — Advanced awk: Variables, Calculations & Reports
+
+BEGIN
+
+BEGIN runs before awk starts reading the file.
+
+awk 'BEGIN {print "Starting log analysis"}' access.log
+
+END
+
+END runs after all lines have been processed.
+awk 'END {print "Finished"}' access.log
+
+
+awk '{count++} END {print count}' access.log
+awk '$4 >= 400 {errors++} END {print errors}' access.log
+
+Calculate percentage
+
+awk '
+{
+    total++
+    if ($4 >= 400)
+        errors++
+}
+END {
+    print "Total:", total
+    print "Errors:", errors
+    print "Error %:", (errors / total) * 100
+}' access.log
+
+BEGIN + END for reports
+----------------------
+
+awk '
+BEGIN {
+    print "===== HTTP REPORT ====="
+}
+{
+    total++
+
+    if ($4 >= 400)
+        errors++
+
+    if ($4 >= 500)
+        server_errors++
+}
+END {
+    print "Total Requests :", total
+    print "4xx/5xx Errors  :", errors
+    print "5xx Errors      :", server_errors
+    printf "Error Rate      : %.2f%%\n", (errors/total)*100
+    print "======================="
+}' access.log
+
+
+🚀 Level 11 — grep + awk + sed
+
+grep → FIND
+awk  → ANALYZE
+sed  → MODIFY
+
+-i - Edit files directly without needing to save separately
+-e - Add the script to the commands to be executed
+-n - Don't automatically print lines
+-r - Use extended regular expressions eg sed -r 's/(World|Line)/Hello/g' example_text.txt
+-f - Add script from a file  eg sed -f script.sed example_text.txt
+-l - Specify line length for l command
+
+s/old/new/
+│ │   │
+│ │   └── replacement
+│ └────── text to find
+└──────── substitute
+
+DevOps warning ⚠️ Be careful with: sed -i
+
+sed 's/dev/prod/' file ==> Only the first occurrence on each line is replaced.
+sed 's/dev/prod/g' file
+
+Delete lines — d
+sed '/pattern/d' file
+
+sed -n '3p' app.log  => print line 3
+
+sed -n '3,5p' app.log => print line 3 to 5
+
+sed 's/^APP_ENV=.*/APP_ENV=prod/' app.conf
+sed 's/^KEY=.*/KEY=new_value/' file
+sed '/^$/d' file  ==> Remove blank lines
+
+sed '/^#/d' config.txt
+
+
+Need to FIND?
+       ↓
+     grep
+
+Need to EXTRACT/CALCULATE?
+       ↓
+      awk
+
+Need to MODIFY/DELETE/REPLACE?
+       ↓
+      sed

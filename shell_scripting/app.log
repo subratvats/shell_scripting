@@ -1,0 +1,10 @@
+2026-09-26 10:01:12 INFO  User login successful from 10.20.30.40
+2026-09-26 10:02:15 ERROR Database connection failed from 10.20.30.41
+2026-09-26 10:03:22 WARN  CPU usage reached 85%
+2026-09-26 10:04:31 INFO  Request GET /api/users returned 200 in 120ms
+2026-09-26 10:05:45 ERROR Request POST /api/login returned 500 in 2500ms
+2026-09-26 10:06:12 INFO  Request GET /api/products returned 200 in 85ms
+2026-09-26 10:07:33 ERROR Connection timeout from 192.168.1.25
+2026-09-26 10:08:44 WARN  Memory usage reached 92%
+2026-09-26 10:09:51 INFO  Request GET /api/orders returned 404 in 350ms
+2026-09-26 10:10:15 ERROR Kubernetes pod payment-service CrashLoopBackOff

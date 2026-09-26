@@ -1,0 +1,16 @@
+INFO Server started
+ERROR Database failed
+WARNING High memory usage
+ERROR Connection timeout
+INFO Request received
+DEBUG Port 8080
+ERROR 500 Internal Server Error
+Server running on port 8080
+Connection from 192.168.1.10
+Connection from 10.20.30.40
+Connection from 172.16.5.100
+18:01:23
+18:02:15
+18:03:44
+18:04:12
+18:05:31

@@ -1,0 +1,5 @@
+INFO 2026-09-26 Server started
+ERROR 2026-09-26 Database failed
+INFO 2026-09-26 Request received
+ERROR 2026-09-26 Connection timeout
+WARNING 2026-09-26 Memory usage high
